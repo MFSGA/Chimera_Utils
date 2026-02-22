@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = [ # "dirs_utils", "network_utils","chimera_utils", "os_utils"
+    "chimera_utils",
+]
+
+[workspace.package]
+edition = "2024"
+license = "GPL-3.0"
+authors = ["LibNyanpasu"]
+# repository = "https://github.com/LibNyanpasu/nyanpasu-utils"
+# repository = "https://github.com/LibNyanpasu/nyanpasu-utils"
+
+
+[workspace.dependencies]
