@@ -18,6 +18,8 @@ pub enum ClashCoreType {
     ClashRustAlpha,
     #[serde(rename = "clash")]
     ClashPremium,
+    #[serde(rename = "chimera_client")]
+    ChimeraClient,
 }
 
 impl AsRef<str> for ClashCoreType {
@@ -28,6 +30,7 @@ impl AsRef<str> for ClashCoreType {
             ClashCoreType::ClashRust => "clash-rs",
             ClashCoreType::ClashRustAlpha => "clash-rs-alpha",
             ClashCoreType::ClashPremium => "clash",
+            ClashCoreType::ChimeraClient => "chimera_client",
         }
     }
 }
@@ -56,7 +59,9 @@ impl ClashCoreType {
                 Cow::Borrowed(OsStr::new("-f")),
                 config_path,
             ],
-            ClashCoreType::ClashRust | ClashCoreType::ClashRustAlpha => {
+            ClashCoreType::ClashRust
+            | ClashCoreType::ClashRustAlpha
+            | ClashCoreType::ChimeraClient => {
                 vec![
                     Cow::Borrowed(OsStr::new("-d")),
                     app_dir,
@@ -106,6 +111,10 @@ impl CoreType {
             CoreType::Clash(ClashCoreType::ClashPremium) => {
                 constcat::concat!("clash", std::env::consts::EXE_SUFFIX)
             }
+            CoreType::Clash(ClashCoreType::ChimeraClient) => {
+                // will use _ instead of -
+                constcat::concat!("chimera-client", std::env::consts::EXE_SUFFIX)
+            }
             CoreType::SingBox => {
                 constcat::concat!("singbox", std::env::consts::EXE_SUFFIX)
             }
@@ -119,6 +128,7 @@ impl CoreType {
             CoreType::Clash(ClashCoreType::ClashRust),
             CoreType::Clash(ClashCoreType::ClashRustAlpha),
             CoreType::Clash(ClashCoreType::ClashPremium),
+            CoreType::Clash(ClashCoreType::ChimeraClient),
             // CoreType::SingBox,
         ]
     }
