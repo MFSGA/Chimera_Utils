@@ -63,8 +63,10 @@ impl CoreInstanceBuilder {
 
     fn validate(&self) -> Result<(), String> {
         match self.binary_path {
-            Some(ref path) if !path.exists() && path.is_dir() => {
-                return Err(format!("binary_path {path:?} does not exist"));
+            Some(ref path) if !path.exists() || path.is_dir() => {
+                return Err(format!(
+                    "binary_path {path:?} does not exist or is a directory"
+                ));
             }
             None => {
                 return Err("binary_path is required".into());
@@ -73,8 +75,8 @@ impl CoreInstanceBuilder {
         }
 
         match self.app_dir {
-            Some(ref path) if !path.exists() && path.is_dir() => {
-                return Err(format!("app_dir {path:?} does not exist"));
+            Some(ref path) if !path.exists() || !path.is_dir() => {
+                return Err(format!("app_dir {path:?} does not exist or is not a directory"));
             }
             None => {
                 return Err("app_dir is required".into());
@@ -83,8 +85,8 @@ impl CoreInstanceBuilder {
         }
 
         match self.config_path {
-            Some(ref path) if !path.exists() && path.is_file() => {
-                return Err(format!("config_path {path:?} does not exist"));
+            Some(ref path) if !path.exists() || !path.is_file() => {
+                return Err(format!("config_path {path:?} does not exist or is not a file"));
             }
             None => {
                 return Err("config_path is required".into());
@@ -339,6 +341,7 @@ impl CoreInstance {
             instance_holder.as_ref().unwrap().clone()
         };
         let instance_ = instance.clone();
+        let mut gracefully_terminated = false;
         tracing::debug!("try to gracefully kill instance...");
         match tokio::task::spawn_blocking(move || instance_.gracefully_kill()).await {
             Ok(Ok(())) => {
@@ -347,7 +350,8 @@ impl CoreInstance {
                         if !state.success() {
                             tracing::warn!("instance terminated with error: {:?}", state);
                         }
-                        return Ok(());
+                        gracefully_terminated = true;
+                        break;
                     }
                     std::thread::sleep(Duration::from_millis(100));
                 }
@@ -359,21 +363,23 @@ impl CoreInstance {
                 tracing::warn!("Failed to spawn gracefully kill thread: {:?}", err);
             }
         }
-        tracing::debug!("gracefully kill failed, try to force kill instance...");
-        instance.kill()?;
-        // poll the instance until it is terminated
-        for i in 0..30 {
-            if let Some(state) = instance.try_wait()? {
-                if !state.success() {
-                    tracing::warn!("instance terminated with error: {:?}", state);
+        if !gracefully_terminated {
+            tracing::debug!("gracefully kill failed, try to force kill instance...");
+            instance.kill()?;
+            // poll the instance until it is terminated
+            for i in 0..30 {
+                if let Some(state) = instance.try_wait()? {
+                    if !state.success() {
+                        tracing::warn!("instance terminated with error: {:?}", state);
+                    }
+                    break;
+                } else if i == 29 {
+                    return Err(CoreInstanceError::Io(std::io::Error::other(
+                        "Failed to kill instance: force kill timeout",
+                    )));
                 }
-                break;
-            } else if i == 29 {
-                return Err(CoreInstanceError::Io(std::io::Error::other(
-                    "Failed to kill instance: force kill timeout",
-                )));
+                std::thread::sleep(Duration::from_millis(100));
             }
-            std::thread::sleep(Duration::from_millis(100));
         }
         {
             let mut instance_holder = self.instance.lock();
