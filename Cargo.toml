@@ -1,16 +1,27 @@
 [workspace]
-resolver = "2"
-members = [ # "dirs_utils", "network_utils","chimera_utils", "os_utils"
+members = [ # "dirs_utils", "network_utils","chimera_utils"
+    "os-utils",
     "chimera_utils",
 ]
+resolver = "2"
 
 [workspace.package]
 edition = "2024"
 license = "GPL-3.0"
 authors = ["LibNyanpasu"]
 # repository = "https://github.com/LibNyanpasu/nyanpasu-utils"
-# repository = "https://github.com/LibNyanpasu/nyanpasu-utils"
+repository = "https://github.com/MFSGA/Chimera_Utils"
 
 
 [workspace.dependencies]
+thiserror = "2"
+log = "0.4"
+parking_lot = "0.12.3"
+simd-json = "0.17"
 tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7" }
+serde = { version = "1.0", features = ["derive"] }
+tracing = "0.1"
+tracing-attributes = "0.1"
+futures = "0.3.30"
+futures-util = "0.3"
