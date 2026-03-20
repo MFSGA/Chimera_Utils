@@ -1,5 +1,6 @@
 [workspace]
-members = [ # "dirs_utils", "network_utils","chimera_utils"
+members = [ #  "network_utils","chimera_utils"
+    "dirs-utils",
     "os-utils",
     "chimera_utils",
 ]

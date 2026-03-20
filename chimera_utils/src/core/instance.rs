@@ -76,7 +76,9 @@ impl CoreInstanceBuilder {
 
         match self.app_dir {
             Some(ref path) if !path.exists() || !path.is_dir() => {
-                return Err(format!("app_dir {path:?} does not exist or is not a directory"));
+                return Err(format!(
+                    "app_dir {path:?} does not exist or is not a directory"
+                ));
             }
             None => {
                 return Err("app_dir is required".into());
@@ -86,7 +88,9 @@ impl CoreInstanceBuilder {
 
         match self.config_path {
             Some(ref path) if !path.exists() || !path.is_file() => {
-                return Err(format!("config_path {path:?} does not exist or is not a file"));
+                return Err(format!(
+                    "config_path {path:?} does not exist or is not a file"
+                ));
             }
             None => {
                 return Err("config_path is required".into());

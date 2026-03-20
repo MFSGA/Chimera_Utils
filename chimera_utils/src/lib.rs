@@ -10,3 +10,6 @@ pub mod core;
 pub mod os;
 
 pub mod io;
+
+#[cfg(feature = "dirs")]
+pub mod dirs;
