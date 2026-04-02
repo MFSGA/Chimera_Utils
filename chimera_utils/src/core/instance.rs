@@ -244,12 +244,22 @@ impl CoreInstance {
             .config_path
             .parent()
             .expect("config_path is not a file");
+        let safe_paths = Self::get_mihomo_safe_paths(&self.app_dir, config_dir, None);
+        tracing::info!(
+            core_type = %self.core_type,
+            binary_path = %self.binary_path,
+            current_dir = %self.app_dir,
+            config_path = %self.config_path,
+            safe_paths = %safe_paths,
+            args = ?args,
+            "starting core instance"
+        );
         let child = Arc::new({
             let mut command = StdCommand::new(&self.binary_path);
             command
                 .env(
                     MIHOMO_SAFE_PATHS_ENV_NAME,
-                    Self::get_mihomo_safe_paths(&self.app_dir, config_dir, None),
+                    &safe_paths,
                 )
                 .args(args)
                 .stderr(stderr_writer)
