@@ -257,10 +257,7 @@ impl CoreInstance {
         let child = Arc::new({
             let mut command = StdCommand::new(&self.binary_path);
             command
-                .env(
-                    MIHOMO_SAFE_PATHS_ENV_NAME,
-                    &safe_paths,
-                )
+                .env(MIHOMO_SAFE_PATHS_ENV_NAME, &safe_paths)
                 .args(args)
                 .stderr(stderr_writer)
                 .stdout(stdout_writer)

@@ -158,6 +158,7 @@ impl std::fmt::Display for CoreType {
 
 // TODO: impl downloadable core and core with different tags
 pub struct CoreMetaData {
+    #[allow(dead_code)]
     downloaded: bool,
 }
 
