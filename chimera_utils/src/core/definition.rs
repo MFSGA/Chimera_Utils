@@ -20,6 +20,8 @@ pub enum ClashCoreType {
     ClashPremium,
     #[serde(rename = "chimera_client")]
     ChimeraClient,
+    #[serde(rename = "chimera_client_alpha")]
+    ChimeraClientAlpha,
 }
 
 impl AsRef<str> for ClashCoreType {
@@ -31,6 +33,7 @@ impl AsRef<str> for ClashCoreType {
             ClashCoreType::ClashRustAlpha => "clash-rs-alpha",
             ClashCoreType::ClashPremium => "clash",
             ClashCoreType::ChimeraClient => "chimera_client",
+            ClashCoreType::ChimeraClientAlpha => "chimera_client_alpha",
         }
     }
 }
@@ -61,7 +64,8 @@ impl ClashCoreType {
             ],
             ClashCoreType::ClashRust
             | ClashCoreType::ClashRustAlpha
-            | ClashCoreType::ChimeraClient => {
+            | ClashCoreType::ChimeraClient
+            | ClashCoreType::ChimeraClientAlpha => {
                 vec![
                     Cow::Borrowed(OsStr::new("-d")),
                     app_dir,
@@ -115,6 +119,9 @@ impl CoreType {
                 // will use _ instead of -
                 constcat::concat!("chimera-client", std::env::consts::EXE_SUFFIX)
             }
+            CoreType::Clash(ClashCoreType::ChimeraClientAlpha) => {
+                constcat::concat!("chimera-client-alpha", std::env::consts::EXE_SUFFIX)
+            }
             CoreType::SingBox => {
                 constcat::concat!("singbox", std::env::consts::EXE_SUFFIX)
             }
@@ -129,6 +136,7 @@ impl CoreType {
             CoreType::Clash(ClashCoreType::ClashRustAlpha),
             CoreType::Clash(ClashCoreType::ClashPremium),
             CoreType::Clash(ClashCoreType::ChimeraClient),
+            CoreType::Clash(ClashCoreType::ChimeraClientAlpha),
             // CoreType::SingBox,
         ]
     }
@@ -138,6 +146,29 @@ impl CoreType {
             .iter()
             .map(|core| core.get_executable_name())
             .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ClashCoreType, CoreType};
+    use camino::Utf8Path;
+
+    #[test]
+    fn chimera_client_alpha_keeps_its_executable_and_runtime_contract() {
+        let core = ClashCoreType::ChimeraClientAlpha;
+        let core_type = CoreType::Clash(core);
+
+        assert_eq!(core.as_ref(), "chimera_client_alpha");
+        assert_eq!(core_type.get_executable_name(), "chimera-client-alpha");
+        assert!(CoreType::get_supported_cores().contains(&core_type));
+
+        let args = core.get_run_args(Utf8Path::new("/data"), Utf8Path::new("/config.yaml"));
+        let args: Vec<_> = args
+            .iter()
+            .map(|arg| arg.to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(args, ["-d", "/data", "-c", "/config.yaml"]);
     }
 }
 
